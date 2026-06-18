@@ -1,0 +1,13 @@
+chromadb
+aiosqlite
+fastapi
+langchain-text-splitters
+langgraph
+langgraph-checkpoint-sqlite
+langchain-openai
+openai
+pymupdf
+pydantic-settings
+python-multipart
+python-dotenv
+uvicorn

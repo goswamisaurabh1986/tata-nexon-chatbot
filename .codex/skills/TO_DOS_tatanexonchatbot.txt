@@ -1,0 +1,38 @@
+Load the ingestion-pipeline skill.
+
+We want to improve the parser architecture and refine DocumentParser.
+
+Please do the following:
+
+1. Improve the folder structure for parsers:
+   - Create folder: src/ingestion/parsers/
+   - Move or create these files:
+     - src/ingestion/parsers/__init__.py
+     - src/ingestion/parsers/text_parser.py     ← Put refined DocumentParser here
+     - src/ingestion/parsers/docx_parser.py     ← Generate docx shim parser code here
+
+2. Refine the Text Parser (DocumentParser):
+   - Rename class to TextParser (better name)
+   - Make the code cleaner and more maintainable
+   - Keep all good functionality: text cleaning, encoding fixes, heading detection, section extraction
+   - Improve readability and add clear comments
+   - Make parse() method clean and well-documented
+
+3. Update src/ingestion/processor.py to import from the new location:
+   from src.ingestion.parsers.text_parser import TextParser
+
+4. Make sure all existing tests continue to pass after these changes.
+
+After completing the refactor, run all tests and show:
+- The new folder structure (ls src/ingestion/parsers/)
+- The complete updated code of src/ingestion/parsers/text_parser.py
+
+
+
+What should we do next?
+Please choose one:
+1. Improve Storer (Make VectorStorer production-ready with ChromaDB or FAISS)
+2. Add better error handling & logging across the pipeline
+3. Review the full current code (I can ask Codex to show key files)
+4. Move to the next module → Retrieval Module (specs/02-retrieval.md)
+5. Add more tests (e.g., large document handling, performance tests, etc.)
