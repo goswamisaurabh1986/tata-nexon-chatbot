@@ -191,6 +191,8 @@ def _build_embedder(settings: Settings) -> Optional[Embedder]:
         model_name=settings.llm.embedding_model,
         api_key=settings.llm.api_key,
         dimensions=settings.llm.embedding_dimensions,
+        max_retries=settings.llm.max_retries,
+        batch_size=settings.llm.embedding_batch_size,
     )
     logger.info("Loaded OpenAI embedder model '%s'.", settings.llm.embedding_model)
     return embedder

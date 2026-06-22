@@ -50,6 +50,12 @@ class LLMSettings(BaseSettings):
         ge=0,
         validation_alias="OPENAI_MAX_RETRIES",
     )
+    embedding_batch_size: int = Field(
+        default=32,
+        ge=1,
+        le=2048,
+        validation_alias="OPENAI_EMBEDDING_BATCH_SIZE",
+    )
 
     @property
     def api_key(self) -> Optional[str]:

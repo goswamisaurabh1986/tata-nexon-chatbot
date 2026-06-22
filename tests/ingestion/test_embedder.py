@@ -29,3 +29,19 @@ def test_embedder_skips_empty_text_in_batch():
         model="text-embedding-3-small",
         input=["Useful Tata Nexon content"],
     )
+
+
+def test_embedder_batches_large_requests():
+    client = Mock()
+    client.embeddings.create.side_effect = [
+        Mock(data=[Mock(embedding=[0.1]), Mock(embedding=[0.2])]),
+        Mock(data=[Mock(embedding=[0.3])]),
+    ]
+    embedder = Embedder(api_key="test-key", client=client, batch_size=2)
+
+    embeddings = embedder.embed_batch(["one", "two", "three"])
+
+    assert embeddings == [[0.1], [0.2], [0.3]]
+    assert client.embeddings.create.call_count == 2
+    assert client.embeddings.create.call_args_list[0].kwargs["input"] == ["one", "two"]
+    assert client.embeddings.create.call_args_list[1].kwargs["input"] == ["three"]

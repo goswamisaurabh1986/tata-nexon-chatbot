@@ -12,6 +12,7 @@ def test_settings_provide_domain_defaults(monkeypatch):
     assert settings.app.app_name == "Tata Nexon Chatbot"
     assert settings.llm.chat_model == "gpt-4o-mini"
     assert settings.llm.embedding_model == "text-embedding-3-small"
+    assert settings.llm.embedding_batch_size == 32
     assert settings.retrieval.top_k == 5
     assert settings.ingestion.chunk_size == 1000
     assert settings.memory.sqlite_path == "chatbot_memory.db"

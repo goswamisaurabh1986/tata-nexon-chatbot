@@ -70,6 +70,7 @@ def main() -> int:
         api_key=settings.llm.api_key,
         dimensions=settings.llm.embedding_dimensions,
         max_retries=settings.llm.max_retries,
+        batch_size=settings.llm.embedding_batch_size,
     )
     storer = VectorStorer(
         collection_name=settings.retrieval.collection_name,
@@ -152,6 +153,7 @@ def _print_header(
     print(f"Files discovered    : {len(files)}")
     print(f"Chunk size/overlap  : {settings.ingestion.chunk_size}/{settings.ingestion.overlap}")
     print(f"Embedding model     : {settings.llm.embedding_model}")
+    print(f"Embedding batch size: {settings.llm.embedding_batch_size}")
     print(f"Vector collection   : {settings.retrieval.collection_name}")
     print(f"Chroma directory    : {settings.retrieval.persist_directory}")
     print(f"Force reprocess     : {'yes' if force else 'no'}")

@@ -22,6 +22,7 @@ class Embedder:
         max_retries: int = 3,
         retry_delay: float = 0.5,
         max_input_chars: int = 20000,
+        batch_size: int = 32,
     ) -> None:
         if not isinstance(model_name, str):
             embedding_model = model_name
@@ -35,16 +36,19 @@ class Embedder:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.max_input_chars = max_input_chars
+        self.batch_size = max(1, batch_size)
         self._missing_key_warned = False
 
     @classmethod
     def from_env(cls) -> "Embedder":
         load_dotenv()
         dimensions = os.getenv("OPENAI_EMBEDDING_DIMENSIONS")
+        batch_size = os.getenv("OPENAI_EMBEDDING_BATCH_SIZE")
         return cls(
             model_name=os.getenv("OPENAI_EMBEDDING_MODEL", cls.DEFAULT_MODEL),
             api_key=os.getenv("OPENAI_API_KEY"),
             dimensions=int(dimensions) if dimensions else None,
+            batch_size=int(batch_size) if batch_size else 32,
         )
 
     def embed(self, text: str) -> list[float]:
@@ -68,9 +72,10 @@ class Embedder:
         if client is None:
             return embeddings
 
-        response = self._create_embeddings(client, [text for _, text in indexed_texts])
-        for (index, _), item in zip(indexed_texts, response.data):
-            embeddings[index] = [float(value) for value in item.embedding]
+        for batch in self._batches(indexed_texts):
+            response = self._create_embeddings(client, [text for _, text in batch])
+            for (index, _), item in zip(batch, response.data):
+                embeddings[index] = [float(value) for value in item.embedding]
 
         return embeddings
 
@@ -109,6 +114,12 @@ class Embedder:
             and all(isinstance(value, (float, int)) for value in embedding)
             for embedding in embeddings
         )
+
+    def _batches(self, indexed_texts: list[tuple[int, str]]) -> list[list[tuple[int, str]]]:
+        return [
+            indexed_texts[index : index + self.batch_size]
+            for index in range(0, len(indexed_texts), self.batch_size)
+        ]
 
     def _prepare_text(self, text: str) -> str:
         if not isinstance(text, str):
@@ -158,6 +169,15 @@ class Embedder:
                 last_error = error
                 if attempt == self.max_retries - 1:
                     break
+                logger.warning(
+                    "Embedding request failed on attempt %s/%s for %s texts; retrying. Error: %s",
+                    attempt + 1,
+                    self.max_retries,
+                    len(texts),
+                    error,
+                )
                 time.sleep(self.retry_delay * (2**attempt))
 
-        raise RuntimeError("Failed to create embeddings after retries.") from last_error
+        raise RuntimeError(
+            f"Failed to create embeddings after retries: {last_error}"
+        ) from last_error
