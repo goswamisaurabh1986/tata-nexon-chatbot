@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.ingestion.chunker import DocumentChunker
 from src.ingestion.embedder import Embedder
 from src.ingestion.parsers.text_parser import TextParser
@@ -8,8 +10,8 @@ from src.ingestion.storer import VectorStorer
 class IngestionProcessor:
     def __init__(
         self,
-        scanner: DocumentScanner | None = None,
-        parser: TextParser | None = None,
+        scanner: Optional[DocumentScanner] = None,
+        parser: Optional[TextParser] = None,
         embedder=None,
         storer=None,
     ) -> None:
@@ -20,14 +22,14 @@ class IngestionProcessor:
 
     def process(
         self,
-        document: str | None = None,
-        file_path: str | None = None,
-        source_filename: str | None = None,
+        document: Optional[str] = None,
+        file_path: Optional[str] = None,
+        source_filename: Optional[str] = None,
         chunk_size: int = DocumentChunker.DEFAULT_CHUNK_SIZE,
         overlap: int = DocumentChunker.DEFAULT_OVERLAP,
         embedder=None,
         storer=None,
-        metadata_overrides: dict | None = None,
+        metadata_overrides: Optional[dict] = None,
     ) -> list:
         scanned_document = (
             self.scanner.load_document(file_path)
@@ -88,7 +90,7 @@ class IngestionProcessor:
     def _add_metadata_overrides(
         self,
         chunks: list[dict],
-        metadata_overrides: dict | None,
+        metadata_overrides: Optional[dict],
     ) -> None:
         if not metadata_overrides:
             return
@@ -99,7 +101,7 @@ class IngestionProcessor:
     def _store_chunks(
         self,
         chunks: list[dict],
-        source: str | None,
+        source: Optional[str],
         cleaned_text: str,
         storer=None,
     ) -> list[dict]:
@@ -115,12 +117,12 @@ class IngestionProcessor:
 
 def process_document(
     document: str,
-    source_filename: str | None = None,
+    source_filename: Optional[str] = None,
     chunk_size: int = DocumentChunker.DEFAULT_CHUNK_SIZE,
     overlap: int = DocumentChunker.DEFAULT_OVERLAP,
     embedder=None,
     storer=None,
-    metadata_overrides: dict | None = None,
+    metadata_overrides: Optional[dict] = None,
 ) -> list:
     return IngestionProcessor().process(
         document,
@@ -139,7 +141,7 @@ def process_file(
     overlap: int = DocumentChunker.DEFAULT_OVERLAP,
     embedder=None,
     storer=None,
-    metadata_overrides: dict | None = None,
+    metadata_overrides: Optional[dict] = None,
 ) -> list:
     return IngestionProcessor().process(
         file_path=file_path,

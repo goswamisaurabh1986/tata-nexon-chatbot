@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any
+from typing import Any, Optional
 
 from src.agent.schemas import AgentResponse, GuardrailDecision, OutputGuardrailResult
 from src.agent.state import AgentState
@@ -108,7 +108,7 @@ category, is_blocked, and confidence.
         "offers",
     )
 
-    def __init__(self, llm: Any | None = None) -> None:
+    def __init__(self, llm: Optional[Any] = None) -> None:
         """Create an output guardrail.
 
         Args:
@@ -131,7 +131,7 @@ category, is_blocked, and confidence.
 
 def output_guardrail_node(
     state: AgentState,
-    llm: Any | None = None,
+    llm: Optional[Any] = None,
 ) -> AgentState:
     """Validate generated output and update final routing.
 
@@ -183,7 +183,7 @@ def output_guardrail_node(
 def _decide_output_safety(
     output_text: str,
     state: AgentState,
-    llm: Any | None,
+    llm: Optional[Any],
 ) -> GuardrailDecision:
     """Decide whether generated output is safe to return.
 
@@ -412,7 +412,7 @@ def _source_ids(state: AgentState) -> list[str]:
     return sources
 
 
-def _is_grounded(state: AgentState) -> bool | None:
+def _is_grounded(state: AgentState) -> Optional[bool]:
     """Return grounding status from state or structured response.
 
     Args:

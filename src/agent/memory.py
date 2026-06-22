@@ -9,7 +9,7 @@ import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 from uuid import uuid4
 
 
@@ -53,7 +53,7 @@ def get_checkpointer(
 
 def create_checkpointer(
     backend: CheckpointerBackend = "memory",
-    sqlite_path: str | None = None,
+    sqlite_path: Optional[str] = None,
 ) -> Any:
     """Backward-compatible checkpointer factory."""
     if backend == "memory":

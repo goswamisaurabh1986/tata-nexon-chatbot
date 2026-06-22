@@ -20,7 +20,7 @@ Graph role:
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from src.agent.nodes.scope import comparison_response, comparison_target
 from src.agent.schemas import AgentResponse, QueryAnalysis
@@ -115,7 +115,7 @@ Return a QueryAnalysis object with:
         "finance",
     )
 
-    def __init__(self, llm: Any | None = None) -> None:
+    def __init__(self, llm: Optional[Any] = None) -> None:
         """Create a router.
 
         Args:
@@ -189,7 +189,7 @@ Return a QueryAnalysis object with:
             return response
         return QueryAnalysis.model_validate(response)
 
-    def _comparison_analysis(self, query: str) -> QueryAnalysis | None:
+    def _comparison_analysis(self, query: str) -> Optional[QueryAnalysis]:
         """Build out-of-scope analysis for external comparison queries.
 
         Args:
@@ -302,7 +302,7 @@ Return a QueryAnalysis object with:
             self._required_topics(lower_query)
         )
 
-    def _normalize_query(self, query: str | None) -> str:
+    def _normalize_query(self, query: Optional[str]) -> str:
         """Normalize optional query text to a stripped string.
 
         Args:
@@ -314,7 +314,7 @@ Return a QueryAnalysis object with:
         return (query or "").strip()
 
 
-def router_node(state: AgentState, llm: Any | None = None) -> AgentState:
+def router_node(state: AgentState, llm: Optional[Any] = None) -> AgentState:
     """Analyze the user query and attach routing metadata to state.
 
     Args:

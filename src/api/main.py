@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any, AsyncIterator, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -31,10 +31,10 @@ MAX_ERROR_STRING_LENGTH = 500
 
 
 def create_app(
-    settings: Settings | None = None,
-    graph: Any | None = None,
-    checkpointer: Any | None = None,
-    ingestion_processor: Any | None = None,
+    settings: Optional[Settings] = None,
+    graph: Optional[Any] = None,
+    checkpointer: Optional[Any] = None,
+    ingestion_processor: Optional[Any] = None,
 ) -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -69,9 +69,9 @@ def create_app(
 
 def _lifespan_factory(
     settings: Settings,
-    graph: Any | None,
-    checkpointer: Any | None,
-    ingestion_processor: Any | None,
+    graph: Optional[Any],
+    checkpointer: Optional[Any],
+    ingestion_processor: Optional[Any],
 ):
     """Create the FastAPI lifespan context manager for runtime setup."""
 
@@ -184,7 +184,7 @@ def _error_response(
     status_code: int,
     code: str,
     message: str,
-    details: dict[str, Any] | None = None,
+    details: Optional[dict[str, Any]] = None,
 ) -> JSONResponse:
     """Build a consistent JSON error response."""
     payload = ErrorResponse(

@@ -63,6 +63,16 @@ def openai_api_key() -> str:
             "OPENAI_API_KEY was not found in the environment, .env, or .env.txt; "
             "skipping real OpenAI retrieval functional tests."
         )
+    normalized_key = api_key.strip().lower()
+    if (
+        normalized_key in {"your-openai-key-here", "your_openai_api_key"}
+        or normalized_key.startswith("your-")
+        or "placeholder" in normalized_key
+    ):
+        pytest.skip(
+            "OPENAI_API_KEY is a placeholder value; skipping real OpenAI "
+            "retrieval functional tests."
+        )
     return api_key
 
 

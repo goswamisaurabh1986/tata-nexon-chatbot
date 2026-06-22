@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
 from starlette.datastructures import UploadFile as StarletteUploadFile
@@ -207,7 +207,7 @@ def _form_bool(value: Any) -> bool:
     return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _optional_form_string(value: Any) -> str | None:
+def _optional_form_string(value: Any) -> Optional[str]:
     """Return a stripped form string or None."""
     text = str(value or "").strip()
     return text or None
@@ -332,7 +332,7 @@ def _upsert_document_summary(
     documents.append(summary)
 
 
-def _ensure_document_hash(request: IngestRequest) -> str | None:
+def _ensure_document_hash(request: IngestRequest) -> Optional[str]:
     """Ensure request metadata contains a SHA-256 hash when bytes are available."""
     existing_hash = request.metadata_overrides.get("document_hash")
     if isinstance(existing_hash, str) and existing_hash:
@@ -362,7 +362,7 @@ def _file_sha256(path: Path) -> str:
 
 def _find_duplicate_document(
     processor: IngestionProcessor,
-    document_hash: str | None,
+    document_hash: Optional[str],
 ) -> dict[str, list[Any]]:
     """Find existing Chroma chunks with the same document hash."""
     if not document_hash:
@@ -431,7 +431,7 @@ def _delete_existing_document_chunks(
 
 def _duplicate_document_response(
     request: IngestRequest,
-    document_hash: str | None,
+    document_hash: Optional[str],
     duplicate: dict[str, list[Any]],
 ) -> IngestResponse:
     """Build a clear, JSON-safe response for skipped duplicate uploads."""
@@ -454,13 +454,13 @@ def _duplicate_document_response(
     )
 
 
-def _collection_from_processor(processor: IngestionProcessor) -> Any | None:
+def _collection_from_processor(processor: IngestionProcessor) -> Optional[Any]:
     """Return the processor's Chroma collection when available."""
     storer = getattr(processor, "storer", None)
     return getattr(storer, "collection", None)
 
 
-def _source_from_duplicate(duplicate: dict[str, list[Any]]) -> str | None:
+def _source_from_duplicate(duplicate: dict[str, list[Any]]) -> Optional[str]:
     """Return the first source metadata value from duplicate lookup results."""
     for metadata in duplicate.get("metadatas") or []:
         if isinstance(metadata, dict) and metadata.get("source"):

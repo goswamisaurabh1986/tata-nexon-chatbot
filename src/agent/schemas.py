@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import AliasChoices, BaseModel, Field
 
@@ -90,7 +90,7 @@ class GuardrailDecision(BaseModel):
         default="medium",
         description="Severity of the guardrail concern.",
     )
-    blocked_reason: str | None = Field(
+    blocked_reason: Optional[str] = Field(
         default=None,
         description="Detailed blocking reason when the content is rejected.",
     )
@@ -177,11 +177,11 @@ class AgentResponse(BaseModel):
         default_factory=dict,
         description="Boolean guardrail outcomes keyed by guardrail name.",
     )
-    refusal_reason: str | None = Field(
+    refusal_reason: Optional[str] = Field(
         default=None,
         description="Reason for refusal when the agent cannot answer.",
     )
-    route: Literal[
+    route: Optional[Literal[
         "simple",
         "retrieval",
         "clarify",
@@ -189,7 +189,7 @@ class AgentResponse(BaseModel):
         "generate",
         "final",
         "rewrite",
-    ] | None = Field(
+    ]] = Field(
         default=None,
         description="Final route that produced the response.",
     )

@@ -22,7 +22,7 @@ Graph role:
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from src.config.settings import Settings, load_settings
 from src.agent.memory import get_checkpointer
@@ -51,18 +51,18 @@ END_ROUTE = "end"
 
 
 def build_agent_graph(
-    llm: Any | None = None,
-    embedder: Any | None = None,
-    vector_store: Any | None = None,
-    retriever: Any | None = None,
-    grader_llm: Any | None = None,
-    top_k: int | None = None,
+    llm: Optional[Any] = None,
+    embedder: Optional[Any] = None,
+    vector_store: Optional[Any] = None,
+    retriever: Optional[Any] = None,
+    grader_llm: Optional[Any] = None,
+    top_k: Optional[int] = None,
     min_relevance_score: float = DEFAULT_MIN_RELEVANCE_SCORE,
     min_relevant_chunks: int = 1,
     filter_threshold: float = 0.0,
-    max_generation_attempts: int | None = None,
-    checkpointer: Any | None = None,
-    settings: Settings | None = None,
+    max_generation_attempts: Optional[int] = None,
+    checkpointer: Optional[Any] = None,
+    settings: Optional[Settings] = None,
     use_memory: bool = True,
     return_checkpointer: bool = False,
     compile_graph: bool = True,
@@ -253,7 +253,7 @@ def build_agent_graph(
     return compiled_graph
 
 
-def _state_llm(state: AgentState, default_llm: Any | None) -> Any | None:
+def _state_llm(state: AgentState, default_llm: Optional[Any]) -> Optional[Any]:
     """Return the runtime LLM dependency.
 
     Args:
@@ -266,7 +266,7 @@ def _state_llm(state: AgentState, default_llm: Any | None) -> Any | None:
     return state.get("llm") or default_llm
 
 
-def _retriever_from_components(embedder: Any | None, vector_store: Any | None) -> Any | None:
+def _retriever_from_components(embedder: Optional[Any], vector_store: Optional[Any]) -> Optional[Any]:
     """Create a Retriever from low-level components.
 
     Args:
@@ -426,7 +426,7 @@ def _generation_attempts(state: AgentState) -> int:
 
 def _run_retriever_node(
     state: AgentState,
-    retriever: Any | None,
+    retriever: Optional[Any],
     top_k: int,
 ) -> AgentState:
     """Run retrieval with an injected or state-provided retriever.
@@ -458,7 +458,7 @@ def _run_retriever_node(
     )
 
 
-def _run_answer_generator_node(state: AgentState, llm: Any | None) -> AgentState:
+def _run_answer_generator_node(state: AgentState, llm: Optional[Any]) -> AgentState:
     """Run answer generation with an injected or state-provided LLM.
 
     Args:

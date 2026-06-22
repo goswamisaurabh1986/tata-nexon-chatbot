@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 import fitz
 
@@ -6,7 +7,7 @@ import fitz
 class DocumentScanner:
     SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
-    def load(self, document: str, source_filename: str | None = None) -> dict:
+    def load(self, document: str, source_filename: Optional[str] = None) -> dict:
         return {
             "text": document,
             "source_filename": source_filename,

@@ -18,7 +18,7 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from dotenv import load_dotenv
 
@@ -40,7 +40,7 @@ class FileIngestionResult:
     chunks_with_embeddings: int = 0
     duration_seconds: float = 0.0
     status: str = "pending"
-    error: str | None = None
+    error: Optional[str] = None
 
 
 def main() -> int:

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -37,7 +39,7 @@ class RetrievalSettings(BaseSettings):
         default=".chroma",
         validation_alias="CHROMA_PERSIST_DIRECTORY",
     )
-    embedding_dimension: int | None = Field(
+    embedding_dimension: Optional[int] = Field(
         default=None,
         gt=0,
         validation_alias="CHROMA_EMBEDDING_DIMENSION",

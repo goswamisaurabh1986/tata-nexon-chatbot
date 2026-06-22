@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
@@ -48,8 +48,8 @@ class OpenAICompatibleAgentResponse(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     is_grounded: bool
     reasoning_steps: list[str]
-    refusal_reason: str | None
-    route: str | None
+    refusal_reason: Optional[str]
+    route: Optional[str]
 
 
 class OpenAIStructuredLLM:
@@ -158,7 +158,7 @@ def _configure_logging(settings: Settings) -> None:
     logging.basicConfig(level=getattr(logging, settings.app.log_level, logging.WARNING))
 
 
-def _build_llm(settings: Settings) -> OpenAIStructuredLLM | None:
+def _build_llm(settings: Settings) -> Optional[OpenAIStructuredLLM]:
     """Create the structured-output LLM when OPENAI_API_KEY is available."""
     api_key = settings.llm.api_key
     if not api_key:
@@ -206,7 +206,7 @@ def _load_chat_session(settings: Settings) -> ChatSession:
 
 def _chat_loop(
     graph: Any,
-    llm: Any | None,
+    llm: Optional[Any],
     retriever: Retriever,
     session: ChatSession,
     settings: Settings,
@@ -284,9 +284,9 @@ def _handle_command(command: str, session: ChatSession) -> bool:
 
 def _print_welcome(
     session: ChatSession,
-    llm: Any | None,
+    llm: Optional[Any],
     retriever: Retriever,
-    checkpointer: Any | None,
+    checkpointer: Optional[Any],
 ) -> None:
     """Print a friendly startup screen."""
     retrieval_mode = "ChromaDB" if retriever.vector_store is not None else "demo fallback"
@@ -393,7 +393,7 @@ def _sources_from_result(result: dict[str, Any]) -> list[str]:
     return sources
 
 
-def _confidence_from_result(result: dict[str, Any]) -> float | None:
+def _confidence_from_result(result: dict[str, Any]) -> Optional[float]:
     """Extract response confidence from graph state."""
     response = result.get("response")
     if isinstance(response, AgentResponse):

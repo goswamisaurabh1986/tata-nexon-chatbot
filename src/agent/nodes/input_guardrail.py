@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any
+from typing import Any, Optional
 
 from src.agent.schemas import AgentResponse, GuardrailDecision, InputGuardrailResult
 from src.agent.nodes.scope import (
@@ -209,7 +209,7 @@ category, is_blocked, and confidence.
         r"\binsult\b",
     )
 
-    def __init__(self, llm: Any | None = None) -> None:
+    def __init__(self, llm: Optional[Any] = None) -> None:
         """Create an input guardrail.
 
         Args:
@@ -232,7 +232,7 @@ category, is_blocked, and confidence.
 
 def input_guardrail_node(
     state: AgentState,
-    llm: Any | None = None,
+    llm: Optional[Any] = None,
 ) -> AgentState:
     """Validate the user query and update graph routing.
 
@@ -283,7 +283,7 @@ def input_guardrail_node(
     }
 
 
-def _decide_input_safety(query: str, llm: Any | None) -> GuardrailDecision:
+def _decide_input_safety(query: str, llm: Optional[Any]) -> GuardrailDecision:
     """Decide whether input is safe enough to continue.
 
     Args:

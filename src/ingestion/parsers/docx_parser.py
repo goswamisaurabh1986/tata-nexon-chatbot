@@ -1,10 +1,12 @@
+from typing import Optional
+
 from src.ingestion.parsers.text_parser import TextParser
 
 
 class DocxParser:
     """Shim parser for DOCX inputs that delegates extracted text to TextParser."""
 
-    def __init__(self, text_parser: TextParser | None = None) -> None:
+    def __init__(self, text_parser: Optional[TextParser] = None) -> None:
         self.text_parser = text_parser or TextParser()
 
     def parse(self, document) -> dict:

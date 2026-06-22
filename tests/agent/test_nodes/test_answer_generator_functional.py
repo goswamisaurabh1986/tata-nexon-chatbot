@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 from pydantic import BaseModel, Field
@@ -32,8 +32,8 @@ class OpenAICompatibleAgentResponse(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     is_grounded: bool
     reasoning_steps: list[str]
-    refusal_reason: str | None
-    route: str | None
+    refusal_reason: Optional[str]
+    route: Optional[str]
 
 
 class OpenAIStructuredInvoker:

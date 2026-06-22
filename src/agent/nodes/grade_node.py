@@ -20,7 +20,7 @@ Graph role:
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from src.agent.schemas import ChunkGradeResult
 from src.agent.state import AgentState
@@ -61,7 +61,7 @@ ChunkGradeResult with relevance_score, is_relevant, and explanation.
 
     def __init__(
         self,
-        grader_llm: Any | None,
+        grader_llm: Optional[Any],
         min_relevance_score: float = DEFAULT_MIN_RELEVANCE_SCORE,
         min_relevant_chunks: int = 1,
         filter_threshold: float = 0.0,
@@ -93,7 +93,7 @@ ChunkGradeResult with relevance_score, is_relevant, and explanation.
 
 def grade_node(
     state: AgentState,
-    grader_llm: Any | None,
+    grader_llm: Optional[Any],
     min_relevance_score: float = DEFAULT_MIN_RELEVANCE_SCORE,
     min_relevant_chunks: int = 1,
     filter_threshold: float = 0.0,
@@ -157,7 +157,7 @@ def _state_without_chunks(state: AgentState) -> AgentState:
 def _grade_chunks(
     chunks: list[dict[str, Any]],
     query: str,
-    grader_llm: Any | None,
+    grader_llm: Optional[Any],
     min_relevance_score: float,
 ) -> list[dict[str, Any]]:
     """Grade all chunks with the LLM when possible, otherwise use fallback."""

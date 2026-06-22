@@ -1,6 +1,7 @@
 import hashlib
 import os
 from pathlib import Path
+from typing import Optional
 
 import chromadb
 
@@ -12,8 +13,8 @@ class VectorStorer:
     def __init__(
         self,
         collection_name: str = DEFAULT_COLLECTION_NAME,
-        persist_directory: str | None = None,
-        embedding_dimension: int | None = None,
+        persist_directory: Optional[str] = None,
+        embedding_dimension: Optional[int] = None,
         client=None,
         vector_store=None,
     ) -> None:
@@ -53,8 +54,8 @@ class VectorStorer:
     def store(
         self,
         chunks: list[dict],
-        source_filename: str | None = None,
-        document: str | None = None,
+        source_filename: Optional[str] = None,
+        document: Optional[str] = None,
     ) -> list[dict]:
         if self.vector_store is not None:
             return self._store_with_delegate(chunks, source_filename, document)
@@ -100,8 +101,8 @@ class VectorStorer:
     def _store_with_delegate(
         self,
         chunks: list[dict],
-        source_filename: str | None,
-        document: str | None,
+        source_filename: Optional[str],
+        document: Optional[str],
     ) -> list[dict]:
         processed_sources = getattr(self.vector_store, "_processed_sources", None)
         if not isinstance(processed_sources, set):
@@ -115,7 +116,7 @@ class VectorStorer:
 
         return chunks
 
-    def _records(self, chunks: list[dict], source_filename: str | None) -> list[dict]:
+    def _records(self, chunks: list[dict], source_filename: Optional[str]) -> list[dict]:
         records = []
         for chunk in chunks:
             embedding = chunk.get("embedding")
@@ -138,7 +139,7 @@ class VectorStorer:
             )
         return records
 
-    def _metadata(self, chunk: dict, source_filename: str | None) -> dict:
+    def _metadata(self, chunk: dict, source_filename: Optional[str]) -> dict:
         metadata = dict(chunk.get("metadata", {}))
         metadata.setdefault("source", source_filename or "unknown")
 

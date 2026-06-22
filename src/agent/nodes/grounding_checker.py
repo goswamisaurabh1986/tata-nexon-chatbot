@@ -22,7 +22,7 @@ Graph role:
 
 import logging
 import re
-from typing import Any
+from typing import Any, Optional
 
 from src.agent.schemas import GroundingCheck
 from src.agent.state import AgentState
@@ -200,7 +200,7 @@ def _state_with_grounding_result(
 
 def _grounding_passed(
     check: GroundingCheck,
-    chunks: list[dict[str, Any]] | None = None,
+    chunks: Optional[list[dict[str, Any]]] = None,
 ) -> bool:
     """Return whether the grounding result is good enough to finalize.
 

@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from typing import Optional, Union
 
 from dotenv import load_dotenv
 
@@ -13,9 +14,9 @@ class Embedder:
 
     def __init__(
         self,
-        model_name: str | object = DEFAULT_MODEL,
-        api_key: str | None = None,
-        dimensions: int | None = None,
+        model_name: Union[str, object] = DEFAULT_MODEL,
+        api_key: Optional[str] = None,
+        dimensions: Optional[int] = None,
         client=None,
         embedding_model=None,
         max_retries: int = 3,

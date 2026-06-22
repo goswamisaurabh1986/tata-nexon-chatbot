@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import Request
 
@@ -43,8 +43,8 @@ class ApiRuntime:
 
     settings: Settings
     checkpointer: Any
-    llm: Any | None
-    embedder: Embedder | None
+    llm: Optional[Any]
+    embedder: Optional[Embedder]
     vector_store: VectorStorer
     retriever: Retriever
     agent_graph: Any
@@ -85,9 +85,9 @@ def get_document_registry(request: Request) -> list:
 
 def build_runtime_dependencies(
     settings: Settings,
-    graph: Any | None = None,
-    checkpointer: Any | None = None,
-    ingestion_processor: IngestionProcessor | None = None,
+    graph: Optional[Any] = None,
+    checkpointer: Optional[Any] = None,
+    ingestion_processor: Optional[IngestionProcessor] = None,
 ) -> ApiRuntime:
     """Build runtime dependencies used by the FastAPI lifespan hook.
 
@@ -138,7 +138,7 @@ def _build_checkpointer(settings: Settings) -> Any:
     )
 
 
-def _build_llm(settings: Settings) -> Any | None:
+def _build_llm(settings: Settings) -> Optional[Any]:
     """Build the real ChatOpenAI model when credentials exist."""
     if not settings.llm.api_key:
         logger.warning("OPENAI_API_KEY is missing; ChatOpenAI will not be loaded.")
@@ -181,7 +181,7 @@ class StructuredChatOpenAI:
         return getattr(self.chat_model, name)
 
 
-def _build_embedder(settings: Settings) -> Embedder | None:
+def _build_embedder(settings: Settings) -> Optional[Embedder]:
     """Build the real OpenAI embedder from typed settings."""
     if not settings.llm.api_key:
         logger.warning("OPENAI_API_KEY is missing; Embedder will not be loaded.")
@@ -213,7 +213,7 @@ def _build_vector_store(settings: Settings) -> VectorStorer:
 
 
 def _build_retriever(
-    embedder: Embedder | None,
+    embedder: Optional[Embedder],
     vector_store: VectorStorer,
 ) -> Retriever:
     """Build the retrieval component from injected real components."""
@@ -230,7 +230,7 @@ def _build_retriever(
 
 
 def _build_ingestion_processor(
-    embedder: Embedder | None,
+    embedder: Optional[Embedder],
     storer: VectorStorer,
 ) -> IngestionProcessor:
     """Build the admin ingestion processor from injected real components."""

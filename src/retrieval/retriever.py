@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Protocol, TypedDict
+from typing import Any, Optional, Protocol, TypedDict
 
 
 Embedding = list[float]
@@ -34,8 +34,8 @@ class Retriever:
 
     def __init__(
         self,
-        embedder: EmbedderProtocol | None = None,
-        vector_store: VectorStoreProtocol | None = None,
+        embedder: Optional[EmbedderProtocol] = None,
+        vector_store: Optional[VectorStoreProtocol] = None,
     ) -> None:
         self.embedder = embedder
         self.vector_store = vector_store

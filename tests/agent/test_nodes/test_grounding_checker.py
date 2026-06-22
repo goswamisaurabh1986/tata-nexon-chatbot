@@ -1,8 +1,10 @@
+from typing import Optional, Union
+
 from src.agent.schemas import GroundingCheck
 
 
 class FakeStructuredLLM:
-    def __init__(self, response: GroundingCheck | dict | None = None) -> None:
+    def __init__(self, response: Optional[Union[GroundingCheck, dict]] = None) -> None:
         self.response = response or GroundingCheck(
             is_grounded=True,
             confidence=0.91,
@@ -18,7 +20,7 @@ class FakeStructuredLLM:
 
 
 class FakeLLM:
-    def __init__(self, response: GroundingCheck | dict | None = None) -> None:
+    def __init__(self, response: Optional[Union[GroundingCheck, dict]] = None) -> None:
         self.schema = None
         self.structured_llm = FakeStructuredLLM(response)
 

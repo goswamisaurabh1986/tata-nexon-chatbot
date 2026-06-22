@@ -3,7 +3,7 @@ name = "tatanexon-chatbot-new"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "aiosqlite>=0.22.1",
     "chromadb>=1.5.9",

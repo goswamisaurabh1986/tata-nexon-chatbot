@@ -9,6 +9,7 @@ directly in tests or tooling.
 from __future__ import annotations
 
 import re
+from typing import Optional
 
 
 COMPARISON_RESPONSE_TEMPLATE = (
@@ -58,7 +59,7 @@ NEXON_ONLY_COMPARISON_TARGETS = (
 )
 
 
-def comparison_response(target: str | None) -> str:
+def comparison_response(target: Optional[str]) -> str:
     """Return the standard polite refusal for external comparison queries.
 
     Args:
@@ -70,7 +71,7 @@ def comparison_response(target: str | None) -> str:
     return COMPARISON_RESPONSE_TEMPLATE.format(target=target or "other car models")
 
 
-def comparison_target(query: str) -> str | None:
+def comparison_target(query: str) -> Optional[str]:
     """Extract an external comparison target from a Tata Nexon query.
 
     Args:
@@ -94,7 +95,7 @@ def comparison_target(query: str) -> str | None:
     return None
 
 
-def target_from_blocked_reason(blocked_reason: str | None) -> str:
+def target_from_blocked_reason(blocked_reason: Optional[str]) -> str:
     """Extract a display target from a comparison blocking reason.
 
     Args:
@@ -142,7 +143,7 @@ def _nexon_reference_pattern() -> str:
     return f"(?:{references})"
 
 
-def _clean_comparison_target(raw_target: str) -> str | None:
+def _clean_comparison_target(raw_target: str) -> Optional[str]:
     """Normalize a captured comparison target and reject Nexon-only targets.
 
     Args:

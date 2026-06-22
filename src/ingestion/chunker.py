@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -27,10 +28,10 @@ class DocumentChunker:
     def chunk(
         self,
         text: str,
-        chunk_size: int | None = None,
-        overlap: int | None = None,
-        source_filename: str | None = None,
-        sections: list[tuple[str, str]] | None = None,
+        chunk_size: Optional[int] = None,
+        overlap: Optional[int] = None,
+        source_filename: Optional[str] = None,
+        sections: Optional[list[tuple[str, str]]] = None,
     ) -> list[dict]:
         chunk_size, overlap = self._chunking_params(chunk_size, overlap)
         sections = self._normalize_sections(sections) or self._detect_sections(text)
@@ -64,7 +65,7 @@ class DocumentChunker:
         self,
         sections: list[tuple[str, str]],
         full_text: str,
-        source_filename: str | None,
+        source_filename: Optional[str],
         chunk_size: int,
         overlap: int,
     ) -> list[dict]:
@@ -195,8 +196,8 @@ class DocumentChunker:
     def _build_chunks(
         self,
         chunk_texts: list[str],
-        source_filename: str | None,
-        section_title: str | None,
+        source_filename: Optional[str],
+        section_title: Optional[str],
         chunk_size: int,
         include_section_key: bool = False,
     ) -> list[dict]:
@@ -224,8 +225,8 @@ class DocumentChunker:
 
     def _chunking_params(
         self,
-        chunk_size: int | None,
-        overlap: int | None,
+        chunk_size: Optional[int],
+        overlap: Optional[int],
     ) -> tuple[int, int]:
         chunk_size = chunk_size if chunk_size is not None else self.chunk_size
         overlap = overlap if overlap is not None else self.overlap
@@ -233,7 +234,7 @@ class DocumentChunker:
 
     def _normalize_sections(
         self,
-        sections: list[tuple[str, str]] | None,
+        sections: Optional[list[tuple[str, str]]],
     ) -> list[tuple[str, str]]:
         if not sections:
             return []
@@ -255,7 +256,7 @@ class DocumentChunker:
             return section_text.strip()
         return f"{heading}\n{section_text}".strip()
 
-    def _source_heading_line(self, section_title: str, full_text: str) -> str | None:
+    def _source_heading_line(self, section_title: str, full_text: str) -> Optional[str]:
         normalized_title = self._normalize_heading_text(section_title)
         if not normalized_title:
             return None
@@ -299,7 +300,7 @@ class DocumentChunker:
             if title:
                 yield {"title": title, "start": match.start(), "end": match.end()}
 
-    def _heading_title(self, line: str) -> str | None:
+    def _heading_title(self, line: str) -> Optional[str]:
         if len(line) > 120 or line.endswith((".", "!", "?")):
             return None
 

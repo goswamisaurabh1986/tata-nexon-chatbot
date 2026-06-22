@@ -20,7 +20,7 @@ Graph role:
 """
 
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from src.agent.schemas import AgentResponse, ClarificationResponse
 from src.agent.state import AgentState
@@ -48,7 +48,7 @@ Guidelines:
 Return a structured ClarificationResponse.
 """
 
-    def __init__(self, llm: Any | None = None) -> None:
+    def __init__(self, llm: Optional[Any] = None) -> None:
         """Create a clarification node.
 
         Args:
@@ -69,7 +69,7 @@ Return a structured ClarificationResponse.
         return clarify_node(state, self.llm)
 
 
-def clarify_node(state: AgentState, llm: Any | None = None) -> AgentState:
+def clarify_node(state: AgentState, llm: Optional[Any] = None) -> AgentState:
     """Generate a clarification response using an LLM or fallback template.
 
     Args:
@@ -108,7 +108,7 @@ def clarify_node(state: AgentState, llm: Any | None = None) -> AgentState:
 
 def _generate_clarification(
     state: AgentState,
-    llm: Any | None,
+    llm: Optional[Any],
 ) -> ClarificationResponse:
     """Generate clarification through structured LLM output when possible.
 

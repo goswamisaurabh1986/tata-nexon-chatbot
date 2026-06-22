@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 
 class TextParser:
@@ -133,21 +134,21 @@ class TextParser:
     def _flush_pending_section(
         self,
         sections: list[dict],
-        title: str | None,
+        title: Optional[str],
         content_lines: list[str],
-        level: int | None,
+        level: Optional[int],
     ) -> None:
         if title and content_lines:
             sections.append(self._section(title, content_lines, level))
 
-    def _section(self, title: str, content_lines: list[str], level: int | None) -> dict:
+    def _section(self, title: str, content_lines: list[str], level: Optional[int]) -> dict:
         return {
             "title": title,
             "content": "\n".join(content_lines).strip(),
             "level": level,
         }
 
-    def _heading_info(self, line: str) -> tuple[str | None, int | None]:
+    def _heading_info(self, line: str) -> tuple[Optional[str], Optional[int]]:
         if not self._is_heading(line):
             return None, None
 
@@ -168,7 +169,7 @@ class TextParser:
         words = line.rstrip(":").split()
         return 1 <= len(words) <= 6 and line[:1].isupper()
 
-    def _heading_level(self, line: str) -> int | None:
+    def _heading_level(self, line: str) -> Optional[int]:
         markdown_match = re.match(r"^(#{1,6})\s+", line)
         if markdown_match:
             return len(markdown_match.group(1))

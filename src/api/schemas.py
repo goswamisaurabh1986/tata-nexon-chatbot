@@ -8,7 +8,7 @@ and agent logic remain in their domain modules.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -42,9 +42,9 @@ class ChatRequest(BaseModel):
         min_length=1,
         description="User message to send to the agent.",
     )
-    thread_id: str | None = Field(default=None, description="Conversation thread ID.")
-    user_id: str | None = Field(default=None, description="User/session owner.")
-    top_k: int | None = Field(default=None, ge=1, le=50)
+    thread_id: Optional[str] = Field(default=None, description="Conversation thread ID.")
+    user_id: Optional[str] = Field(default=None, description="User/session owner.")
+    top_k: Optional[int] = Field(default=None, ge=1, le=50)
     include_reasoning: bool = False
 
     @field_validator("message")
@@ -75,7 +75,7 @@ class ChatResponse(BaseModel):
     sources: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     is_grounded: bool = False
-    route: str | None = None
+    route: Optional[str] = None
     reasoning_steps: list[str] = Field(default_factory=list)
 
 
@@ -90,10 +90,10 @@ class IngestRequest(BaseModel):
         metadata_overrides: Metadata to merge into the ingestion summary.
     """
 
-    file_path: str | None = None
-    source_filename: str | None = None
+    file_path: Optional[str] = None
+    source_filename: Optional[str] = None
     force_reprocess: bool = False
-    collection_name: str | None = None
+    collection_name: Optional[str] = None
     metadata_overrides: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")

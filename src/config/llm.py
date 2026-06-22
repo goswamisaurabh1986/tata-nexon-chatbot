@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import AliasChoices, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -17,7 +19,7 @@ class LLMSettings(BaseSettings):
         populate_by_name=True,
     )
 
-    openai_api_key: SecretStr | None = Field(
+    openai_api_key: Optional[SecretStr] = Field(
         default=None,
         validation_alias="OPENAI_API_KEY",
         repr=False,
@@ -30,7 +32,7 @@ class LLMSettings(BaseSettings):
         default="text-embedding-3-small",
         validation_alias=AliasChoices("OPENAI_EMBEDDING_MODEL", "EMBEDDING_MODEL"),
     )
-    embedding_dimensions: int | None = Field(
+    embedding_dimensions: Optional[int] = Field(
         default=None,
         gt=0,
         validation_alias=AliasChoices(
@@ -50,7 +52,7 @@ class LLMSettings(BaseSettings):
     )
 
     @property
-    def api_key(self) -> str | None:
+    def api_key(self) -> Optional[str]:
         """Return the raw OpenAI API key when configured."""
         if self.openai_api_key is None:
             return None

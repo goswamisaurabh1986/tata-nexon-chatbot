@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from textwrap import shorten
-from typing import Any
+from typing import Any, Optional
 
 import chromadb
 from dotenv import load_dotenv
@@ -126,7 +126,7 @@ def _metadata_value(metadata: dict[str, Any], key: str) -> str:
     return str(value)
 
 
-def _preview_text(text: str | None) -> str:
+def _preview_text(text: Optional[str]) -> str:
     """Return a single-line chunk text preview."""
     normalized = " ".join((text or "").split())
     return shorten(normalized, width=TEXT_PREVIEW_WIDTH, placeholder="...")

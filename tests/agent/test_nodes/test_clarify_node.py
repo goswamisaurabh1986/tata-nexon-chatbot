@@ -1,8 +1,10 @@
+from typing import Optional, Union
+
 from src.agent.schemas import AgentResponse, ClarificationResponse
 
 
 class FakeStructuredLLM:
-    def __init__(self, response: ClarificationResponse | dict | None = None) -> None:
+    def __init__(self, response: Optional[Union[ClarificationResponse, dict]] = None) -> None:
         self.response = response or ClarificationResponse(
             message="Could you specify which Tata Nexon feature or variant you want to know about?",
             suggested_questions=[
@@ -19,7 +21,7 @@ class FakeStructuredLLM:
 
 
 class FakeLLM:
-    def __init__(self, response: ClarificationResponse | dict | None = None) -> None:
+    def __init__(self, response: Optional[Union[ClarificationResponse, dict]] = None) -> None:
         self.schema = None
         self.structured_llm = FakeStructuredLLM(response)
 

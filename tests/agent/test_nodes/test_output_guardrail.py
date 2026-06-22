@@ -1,8 +1,10 @@
+from typing import Optional, Union
+
 from src.agent.schemas import AgentResponse, GuardrailDecision
 
 
 class FakeStructuredLLM:
-    def __init__(self, response: GuardrailDecision | dict | None = None) -> None:
+    def __init__(self, response: Optional[Union[GuardrailDecision, dict]] = None) -> None:
         self.response = response or GuardrailDecision(
             is_safe=True,
             is_blocked=False,
@@ -20,7 +22,7 @@ class FakeStructuredLLM:
 
 
 class FakeLLM:
-    def __init__(self, response: GuardrailDecision | dict | None = None) -> None:
+    def __init__(self, response: Optional[Union[GuardrailDecision, dict]] = None) -> None:
         self.schema = None
         self.structured_llm = FakeStructuredLLM(response)
 

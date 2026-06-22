@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import Any, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
@@ -33,7 +33,7 @@ async def chat(
     stream: bool = Query(False, description="Stream the response as Server-Sent Events."),
     graph: Any = Depends(get_agent_graph),
     settings: Settings = Depends(get_settings),
-) -> ChatResponse | StreamingResponse:
+) -> Union[ChatResponse, StreamingResponse]:
     """Run the LangGraph agent for one user message.
 
     Args:
@@ -73,9 +73,9 @@ async def chat(
 def chat_event_stream(
     message: str = Query(..., min_length=1, description="User message to stream."),
     stream: bool = Query(True, description="Must be true for EventSource clients."),
-    thread_id: str | None = Query(None, description="Conversation thread ID."),
-    user_id: str | None = Query(None, description="User/session owner."),
-    top_k: int | None = Query(None, ge=1, le=50),
+    thread_id: Optional[str] = Query(None, description="Conversation thread ID."),
+    user_id: Optional[str] = Query(None, description="User/session owner."),
+    top_k: Optional[int] = Query(None, ge=1, le=50),
     include_reasoning: bool = Query(False),
     graph: Any = Depends(get_agent_graph),
     settings: Settings = Depends(get_settings),
@@ -165,7 +165,7 @@ async def _stream_chat_response(
     """
     yield _sse_event({"type": "start", "thread_id": thread_id})
 
-    final_state: dict[str, Any] | None = None
+    final_state: Optional[dict[str, Any]] = None
     try:
         if hasattr(graph, "astream_events"):
             async for event in _iter_astream_events(graph, state, thread_id):
@@ -230,9 +230,9 @@ async def _stream_from_astream(
     graph: Any,
     state: AgentState,
     thread_id: str,
-) -> dict[str, Any] | None:
+) -> Optional[dict[str, Any]]:
     """Stream LangGraph state updates and return the latest state-like output."""
-    final_state: dict[str, Any] | None = None
+    final_state: Optional[dict[str, Any]] = None
     async for update in graph.astream(state, config=graph_config(thread_id)):
         candidate_state = _state_like_mapping(update)
         if candidate_state is not None:
@@ -240,7 +240,7 @@ async def _stream_from_astream(
     return final_state
 
 
-def _token_from_event(event: dict[str, Any]) -> str | None:
+def _token_from_event(event: dict[str, Any]) -> Optional[str]:
     """Extract token text from a LangGraph/LangChain stream event."""
     data = event.get("data", {})
     chunk = data.get("chunk") if isinstance(data, dict) else None
@@ -249,7 +249,7 @@ def _token_from_event(event: dict[str, Any]) -> str | None:
     return _content_from_chunk(chunk)
 
 
-def _content_from_chunk(chunk: Any) -> str | None:
+def _content_from_chunk(chunk: Any) -> Optional[str]:
     """Extract text content from common LangChain chunk shapes."""
     if chunk is None:
         return None
@@ -262,7 +262,7 @@ def _content_from_chunk(chunk: Any) -> str | None:
     )
 
 
-def _content_to_text(content: Any) -> str | None:
+def _content_to_text(content: Any) -> Optional[str]:
     """Convert chunk content into text, including list-based content blocks."""
     if content is None:
         return None
@@ -280,7 +280,7 @@ def _content_to_text(content: Any) -> str | None:
     return str(content) if content else None
 
 
-def _final_state_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
+def _final_state_from_event(event: dict[str, Any]) -> Optional[dict[str, Any]]:
     """Return state-like output from a terminal LangGraph event."""
     data = event.get("data", {})
     if not isinstance(data, dict):
@@ -288,7 +288,7 @@ def _final_state_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
     return _state_like_mapping(data.get("output"))
 
 
-def _state_like_mapping(value: Any) -> dict[str, Any] | None:
+def _state_like_mapping(value: Any) -> Optional[dict[str, Any]]:
     """Find a graph-state-shaped mapping inside nested stream updates."""
     if not isinstance(value, dict):
         return None

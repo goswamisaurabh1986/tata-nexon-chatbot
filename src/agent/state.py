@@ -1,10 +1,10 @@
-from typing import Annotated, Any, Literal, TypedDict
+from typing import Annotated, Any, Literal, Optional, TypedDict, Union
 
 try:
     from langgraph.graph.message import add_messages
 except ImportError:
 
-    def add_messages(left: list | None, right: list | None) -> list:
+    def add_messages(left: Optional[list], right: Optional[list]) -> list:
         """Fallback reducer used when LangGraph is not installed."""
         return [*(left or []), *(right or [])]
 
@@ -55,7 +55,7 @@ class AgentState(TypedDict, total=False):
 
     # Generation
     generation: str
-    response: AgentResponse | str
+    response: Union[AgentResponse, str]
 
     # Guardrails and quality
     input_guardrail: InputGuardrailResult
@@ -66,10 +66,10 @@ class AgentState(TypedDict, total=False):
     guardrail_status: dict[str, bool]
 
     # Error handling
-    error: str | None
+    error: Optional[str]
 
 
-def initial_agent_state(query: str, messages: list | None = None) -> AgentState:
+def initial_agent_state(query: str, messages: Optional[list] = None) -> AgentState:
     """Create a state object with sensible defaults for graph execution."""
     return {
         "messages": messages or [],
