@@ -135,11 +135,13 @@ def _streaming_response(
 async def _invoke_graph(graph: Any, state: AgentState, thread_id: str) -> dict[str, Any]:
     """Invoke the graph and translate failures into HTTP errors.
 
-    Async checkpointers require LangGraph's async runtime methods. Tests and
-    simple fakes may still expose only ``invoke``, so this helper supports both.
+    The production graph uses LangGraph's synchronous ``SqliteSaver`` for
+    Python 3.9 compatibility, so it must run through ``invoke``. Async graph
+    methods are still supported for tests or deployments using async-safe
+    checkpointers.
     """
     try:
-        if hasattr(graph, "ainvoke"):
+        if not _uses_sync_sqlite_checkpointer(graph) and hasattr(graph, "ainvoke"):
             return await graph.ainvoke(state, config=graph_config(thread_id))
         return graph.invoke(state, config=graph_config(thread_id))
     except Exception as error:
@@ -158,16 +160,18 @@ async def _stream_chat_response(
 ) -> AsyncIterator[str]:
     """Stream graph execution as Server-Sent Events.
 
-    The stream prefers LangGraph's ``astream_events`` API so token-level model
-    events can be forwarded when the underlying LLM supports streaming. If the
-    graph only exposes ``astream`` or ``invoke``, the function still emits a
-    valid SSE stream with a final response event.
+    Graphs compiled with the synchronous ``SqliteSaver`` cannot use LangGraph's
+    async streaming runtime. For those graphs, the endpoint still returns a
+    valid SSE stream by emitting start/final/done events around a synchronous
+    invocation. Async-compatible graphs may stream token events.
     """
     yield _sse_event({"type": "start", "thread_id": thread_id})
 
     final_state: Optional[dict[str, Any]] = None
     try:
-        if hasattr(graph, "astream_events"):
+        if _uses_sync_sqlite_checkpointer(graph):
+            final_state = graph.invoke(state, config=graph_config(thread_id))
+        elif hasattr(graph, "astream_events"):
             async for event in _iter_astream_events(graph, state, thread_id):
                 token = _token_from_event(event)
                 if token:
@@ -205,6 +209,22 @@ async def _stream_chat_response(
                 "message": "Chat agent is temporarily unavailable.",
             }
         )
+
+
+def _uses_sync_sqlite_checkpointer(graph: Any) -> bool:
+    """Return whether the graph is backed by LangGraph's synchronous SQLite saver."""
+    checkpointer = getattr(graph, "checkpointer", None) or getattr(
+        graph,
+        "_checkpointer",
+        None,
+    )
+    if checkpointer is None:
+        return False
+
+    return (
+        checkpointer.__class__.__name__ == "SqliteSaver"
+        and checkpointer.__class__.__module__ == "langgraph.checkpoint.sqlite"
+    )
 
 
 async def _iter_astream_events(

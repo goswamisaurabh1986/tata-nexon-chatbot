@@ -87,7 +87,8 @@ def build_agent_graph(
         max_generation_attempts: Reserved upper bound for rewrite/regeneration loops.
             When omitted, the value comes from ``Settings``.
         checkpointer: Optional LangGraph checkpointer. When omitted and
-            ``use_memory`` is true, the default local checkpointer is created.
+            ``use_memory`` is true, the default local synchronous checkpointer
+            is created.
         settings: Optional typed configuration object.
         use_memory: Compile the graph with a checkpointer for multi-turn state.
         return_checkpointer: Return ``(graph, checkpointer)`` when true.

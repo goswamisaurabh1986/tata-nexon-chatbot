@@ -30,7 +30,7 @@ The assistant is intentionally scoped to Tata Nexon. It answers product, brochur
 | PDF parsing | PyMuPDF |
 | Chunking | LangChain `RecursiveCharacterTextSplitter` |
 | Configuration | Pydantic Settings, python-dotenv |
-| Memory | LangGraph checkpointers, Async SQLite saver |
+| Memory | LangGraph checkpointers, synchronous SQLite saver |
 | Frontend | React, Vite, TypeScript, Tailwind CSS |
 | Tests | Pytest |
 

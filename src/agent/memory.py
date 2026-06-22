@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+import sqlite3
 from typing import Any, Literal, Optional
 from uuid import uuid4
 
@@ -28,11 +28,9 @@ def get_checkpointer(
     """Return a LangGraph checkpointer for conversation memory.
 
     SQLite is preferred for persistent local memory and uses LangGraph's
-    ``AsyncSqliteSaver`` so async graph streaming works correctly.
-
-    FastAPI should prefer ``checkpointer_context`` so the async SQLite
-    connection stays open for the application lifespan. This synchronous helper
-    remains for tests and direct graph construction.
+    regular ``SqliteSaver``. The synchronous saver is the compatibility path
+    for Python 3.9 deployments on Amazon Linux and avoids async checkpoint API
+    mismatches during graph execution.
     """
     if backend == "memory":
         return _memory_checkpointer()
@@ -40,14 +38,11 @@ def get_checkpointer(
         raise ValueError(f"Unsupported checkpointer backend: {backend}")
 
     try:
-        return _async_sqlite_checkpointer(db_path)
+        return _sqlite_checkpointer(db_path)
     except ImportError:
         logger.warning(
             "SQLite checkpointer package is not installed; using in-memory memory."
         )
-        return _memory_checkpointer()
-    except RuntimeError as error:
-        logger.warning("%s Using in-memory memory for this synchronous caller.", error)
         return _memory_checkpointer()
 
 
@@ -66,11 +61,11 @@ async def checkpointer_context(
     db_path: str = DEFAULT_MEMORY_DB,
     backend: CheckpointerBackend = "sqlite",
 ) -> AsyncIterator[Any]:
-    """Yield a checkpointer with any async resources kept alive.
+    """Yield a checkpointer for FastAPI lifespan management.
 
-    ``AsyncSqliteSaver.from_conn_string`` is an async context manager. Keeping
-    it open for the full FastAPI lifespan prevents closed-connection errors and
-    gives LangGraph access to the async checkpoint APIs used by streaming.
+    FastAPI lifespan hooks are async, but the checkpointer itself is now the
+    synchronous ``SqliteSaver``. This wrapper keeps the SQLite connection open
+    for the full application lifespan and closes it cleanly on shutdown.
     """
     if backend == "memory":
         yield _memory_checkpointer()
@@ -79,8 +74,11 @@ async def checkpointer_context(
         raise ValueError(f"Unsupported checkpointer backend: {backend}")
 
     try:
-        async with _async_sqlite_checkpointer_context(db_path) as saver:
+        saver = _sqlite_checkpointer(db_path)
+        try:
             yield saver
+        finally:
+            _close_sqlite_checkpointer(saver)
     except ImportError:
         logger.warning(
             "SQLite checkpointer package is not installed; using in-memory memory."
@@ -148,22 +146,28 @@ def graph_config(thread_id: str) -> dict[str, dict[str, str]]:
     return {"configurable": {"thread_id": thread_id}}
 
 
-def _async_sqlite_checkpointer(db_path: str) -> Any:
-    """Create a persistent async SQLite checkpointer for direct callers."""
-    asyncio.get_running_loop()
-    raise RuntimeError(
-        "Use checkpointer_context() to create AsyncSqliteSaver with a managed async connection."
-    )
-
-
-@asynccontextmanager
-async def _async_sqlite_checkpointer_context(db_path: str) -> AsyncIterator[Any]:
-    """Create an async SQLite saver using LangGraph's managed context."""
-    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+def _sqlite_checkpointer(db_path: str) -> Any:
+    """Create a persistent synchronous SQLite checkpointer."""
+    from langgraph.checkpoint.sqlite import SqliteSaver
 
     path = _prepare_sqlite_path(db_path)
-    async with AsyncSqliteSaver.from_conn_string(str(path)) as saver:
-        yield saver
+    connection = sqlite3.connect(str(path), check_same_thread=False)
+    saver = SqliteSaver(connection)
+    saver.setup()
+    logger.info("Loaded synchronous SQLite checkpointer at '%s'.", path)
+    return saver
+
+
+def _close_sqlite_checkpointer(checkpointer: Any) -> None:
+    """Close the underlying SQLite connection when one is available."""
+    connection = getattr(checkpointer, "conn", None)
+    if connection is None:
+        return
+
+    try:
+        connection.close()
+    except Exception:
+        logger.warning("Failed to close SQLite checkpointer connection.", exc_info=True)
 
 
 def _prepare_sqlite_path(db_path: str) -> Path:

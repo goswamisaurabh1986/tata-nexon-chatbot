@@ -237,7 +237,7 @@ The system supports multi-turn conversations through LangGraph checkpointers.
 
 Supported backends:
 
-- `sqlite` using `AsyncSqliteSaver`
+- `sqlite` using `SqliteSaver`
 - `memory` using `MemorySaver`
 
 Thread IDs are passed through LangGraph runtime config:
@@ -306,7 +306,7 @@ flowchart TD
     Settings[Settings] --> LLM[ChatOpenAI adapter]
     Settings --> Embedder[OpenAI Embedder]
     Settings --> Store[VectorStorer / ChromaDB]
-    Settings --> Memory[Async SQLite Checkpointer]
+    Settings --> Memory[SQLite Checkpointer]
     Embedder --> Retriever[Retriever]
     Store --> Retriever
     LLM --> Graph[Compiled LangGraph]
