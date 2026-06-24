@@ -80,6 +80,37 @@ def test_build_agent_graph_blocks_comparison_before_downstream_nodes():
     assert result["guardrail_status"]["input_safe"] is False
 
 
+def test_build_agent_graph_routes_thanks_to_direct_answer_without_retrieval():
+    pytest.importorskip("langgraph")
+
+    from src.agent.graph import build_agent_graph
+    from src.agent.state import initial_agent_state
+
+    class ExplodingRetriever:
+        def retrieve(self, query, top_k=5):
+            raise AssertionError("Retriever should not run for simple conversation.")
+
+    graph = build_agent_graph(
+        retriever=ExplodingRetriever(),
+        use_memory=False,
+    )
+    state = initial_agent_state("Okay, thanks")
+    state["generation"] = "Old Tata Nexon performance answer."
+    state["response"] = "Old response"
+    state["citations"] = [{"citation_id": "old.pdf:1"}]
+    state["retrieved_chunks"] = [{"text": "old chunk"}]
+    state["graded_chunks"] = [{"text": "old graded chunk"}]
+
+    result = graph.invoke(state)
+
+    assert result["route"] == "final"
+    assert result["generation"] != "Old Tata Nexon performance answer."
+    assert "welcome" in result["generation"].lower() or "help" in result["generation"].lower()
+    assert result["citations"] == []
+    assert result["retrieved_chunks"] == []
+    assert result["graded_chunks"] == []
+
+
 def test_build_agent_graph_persists_messages_across_turns():
     pytest.importorskip("langgraph")
 

@@ -20,6 +20,7 @@ from src.agent.schemas import (
 Route = Literal[
     "simple",
     "retrieval",
+    "direct_answer",
     "clarify",
     "refuse",
     "generate",
@@ -52,6 +53,7 @@ class AgentState(TypedDict, total=False):
     citations: list[dict[str, Any]]
     top_k: int
     similarity_threshold: float
+    direct_answer: bool
 
     # Generation
     generation: str

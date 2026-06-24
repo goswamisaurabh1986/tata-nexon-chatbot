@@ -52,6 +52,9 @@ Be lenient with legitimate car-related wording. Allow queries such as:
 - "Price of Tata Nexon"
 - "Safety features of this vehicle"
 - "Performance of the car"
+- "Hi"
+- "Okay, thanks"
+- "What can you do?"
 
 Treat implicit references like "this car", "the vehicle", "the SUV", "Nexon",
 and "the model" as Tata Nexon references in this assistant.
@@ -154,6 +157,13 @@ category, is_blocked, and confidence.
         "the suv",
         "this model",
         "the model",
+    )
+    SIMPLE_CONVERSATION_PATTERNS = (
+        r"^(?:hi|hello|hey|good morning|good afternoon|good evening)\b[\s!.]*$",
+        r"^(?:ok|okay|cool|great|got it|understood|sounds good)[\s!.]*$",
+        r"^(?:(?:ok|okay|cool|great|got it|understood|sounds good)[,\s]*)?(?:thanks|thank you|thx)[\s!.]*$",
+        r"^(?:bye|goodbye|see you|see ya)[\s!.]*$",
+        r"^(?:what can you do|who are you|help|what do you do)\??$",
     )
     PROMPT_INJECTION_PATTERNS = (
         r"\bignore (?:all )?(?:previous|prior|above) instructions\b",
@@ -408,6 +418,16 @@ def _local_input_decision(query: str) -> GuardrailDecision:
             "medium",
             0.95,
         )
+    if _is_simple_conversation(lower_query):
+        return GuardrailDecision(
+            is_safe=True,
+            is_blocked=False,
+            category="safe",
+            reason="Simple conversational input is safe.",
+            severity="low",
+            blocked_reason=None,
+            confidence=0.9,
+        )
     if not _is_tata_nexon_related(lower_query):
         return _blocked(
             "off_topic",
@@ -614,7 +634,8 @@ def _is_over_strict_llm_scope_decision(
         return False
     if not llm_decision.is_blocked or llm_decision.category != "off_topic":
         return False
-    return _is_tata_nexon_related(query.lower())
+    lower_query = query.lower()
+    return _is_tata_nexon_related(lower_query) or _is_simple_conversation(lower_query)
 
 
 def _coerce_decision(raw_decision: Any) -> GuardrailDecision:
@@ -629,6 +650,19 @@ def _coerce_decision(raw_decision: Any) -> GuardrailDecision:
     if isinstance(raw_decision, GuardrailDecision):
         return raw_decision
     return GuardrailDecision.model_validate(raw_decision)
+
+
+def _is_simple_conversation(lower_query: str) -> bool:
+    """Return whether input is a harmless conversational turn.
+
+    Args:
+        lower_query: Lower-cased query text.
+
+    Returns:
+        True for greetings, acknowledgements, thanks, goodbyes, and capability
+        questions that should be routed without retrieval.
+    """
+    return _matches_any(lower_query.strip(), InputGuardrail.SIMPLE_CONVERSATION_PATTERNS)
 
 
 def _reasoning_step(prefix: str, decision: GuardrailDecision) -> str:

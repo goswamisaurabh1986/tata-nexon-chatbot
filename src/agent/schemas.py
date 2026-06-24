@@ -184,6 +184,7 @@ class AgentResponse(BaseModel):
     route: Optional[Literal[
         "simple",
         "retrieval",
+        "direct_answer",
         "clarify",
         "refuse",
         "generate",

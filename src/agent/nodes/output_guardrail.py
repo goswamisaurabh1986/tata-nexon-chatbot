@@ -198,6 +198,8 @@ def _decide_output_safety(
     local_decision = _local_output_decision(output_text, state)
     if local_decision.is_blocked:
         return local_decision
+    if state.get("direct_answer"):
+        return local_decision
 
     if llm is None:
         return local_decision
@@ -279,6 +281,16 @@ def _local_output_decision(output_text: str, state: AgentState) -> GuardrailDeci
             "Suspicious unsupported output detected.",
             "high",
             0.88,
+        )
+    if state.get("direct_answer"):
+        return GuardrailDecision(
+            is_safe=True,
+            is_blocked=False,
+            category="safe",
+            reason="Direct conversational answer is safe.",
+            severity="low",
+            blocked_reason=None,
+            confidence=0.85,
         )
     if _is_grounded(state) is False:
         return _blocked(

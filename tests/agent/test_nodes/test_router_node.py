@@ -78,6 +78,20 @@ def test_router_routes_reasonable_ownership_queries_to_retrieval(query):
     assert result["route"] == "retrieval"
 
 
+@pytest.mark.parametrize(
+    "query",
+    ["Okay, thanks", "Thanks", "Hi", "Hello", "Bye", "What can you do?"],
+)
+def test_router_routes_simple_conversation_to_direct_answer(query):
+    result = router_node({"query": query})
+
+    analysis = result["query_analysis"]
+    assert isinstance(analysis, QueryAnalysis)
+    assert analysis.is_answerable is True
+    assert analysis.needs_retrieval is False
+    assert result["route"] == "direct_answer"
+
+
 def test_router_keeps_nexon_only_variant_comparison_in_scope():
     result = router_node({"query": "Compare Tata Nexon variants"})
 

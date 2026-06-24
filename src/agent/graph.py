@@ -28,6 +28,7 @@ from src.config.settings import Settings, load_settings
 from src.agent.memory import get_checkpointer
 from src.agent.nodes.answer_generator import answer_generator_node
 from src.agent.nodes.clarify_node import clarify_node
+from src.agent.nodes.direct_answer import direct_answer_node
 from src.agent.nodes.grade_node import DEFAULT_MIN_RELEVANCE_SCORE, grade_node
 from src.agent.nodes.grounding_checker import grounding_checker_node
 from src.agent.nodes.input_guardrail import input_guardrail_node
@@ -41,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 INPUT_GUARDRAIL = "input_guardrail"
 ROUTER_NODE = "router_node"
+DIRECT_ANSWER_NODE = "direct_answer_node"
 RETRIEVER_NODE = "retriever_node"
 GRADE_NODE = "grade_node"
 ANSWER_GENERATOR_NODE = "answer_generator_node"
@@ -126,6 +128,10 @@ def build_agent_graph(
         lambda state: router_node(state, llm=_state_llm(state, llm)),
     )
     graph.add_node(
+        DIRECT_ANSWER_NODE,
+        lambda state: direct_answer_node(state, llm=_state_llm(state, llm)),
+    )
+    graph.add_node(
         RETRIEVER_NODE,
         lambda state: _run_retriever_node(
             state,
@@ -179,18 +185,24 @@ def build_agent_graph(
         },
     )
 
-    # Router is the main decision maker after input safety. It sends valid
-    # Tata Nexon questions into retrieval, unclear safe queries to one terminal
-    # clarification, and explicit refusals directly to END.
+    # Router is the main decision maker after input safety. It sends simple
+    # conversational turns to DirectAnswer, valid Tata Nexon questions into
+    # retrieval, unclear safe queries to one terminal clarification, and
+    # explicit refusals directly to END.
     graph.add_conditional_edges(
         ROUTER_NODE,
         _route_after_router,
         {
+            DIRECT_ANSWER_NODE: DIRECT_ANSWER_NODE,
             RETRIEVER_NODE: RETRIEVER_NODE,
             CLARIFY_NODE: CLARIFY_NODE,
             END_ROUTE: END,
         },
     )
+
+    # Direct answers do not need retrieval, grading, generation, or grounding.
+    # They still pass through the output guardrail as the final safety gate.
+    graph.add_edge(DIRECT_ANSWER_NODE, OUTPUT_GUARDRAIL)
 
     # Retrieval path: retrieve context, grade it, then generate only when the
     # context is sufficient. Poor context asks for clarification once.
@@ -319,12 +331,15 @@ def _route_after_router(state: AgentState) -> str:
         state: Agent state after ``router_node``.
 
     Returns:
-        ``retriever_node`` for retrieval, ``clarify_node`` for safe unresolved
-        queries, or ``end`` for explicit refusals.
+        ``direct_answer_node`` for simple conversation, ``retriever_node`` for
+        retrieval, ``clarify_node`` for safe unresolved queries, or ``end`` for
+        explicit refusals.
     """
     route = state.get("route")
     if route == "refuse":
         return END_ROUTE
+    if route == "direct_answer":
+        return DIRECT_ANSWER_NODE
     if route == "retrieval":
         return RETRIEVER_NODE
     return CLARIFY_NODE

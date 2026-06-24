@@ -11,15 +11,16 @@ Inputs:
 
 Outputs:
     AgentState with ``query_analysis`` populated as a ``QueryAnalysis`` model
-    and ``route`` set to ``retrieval`` or ``clarify``.
+    and ``route`` set to ``retrieval``, ``direct_answer``, or ``clarify``.
 
 Graph role:
     This node is the first decision point after the input guardrail. It decides
-    whether a safe query should retrieve brochure context, ask for
-    clarification.
+    whether a safe query should retrieve brochure context, answer directly, or
+    ask for clarification.
 """
 
 import logging
+import re
 from typing import Any, Optional
 
 from src.agent.nodes.scope import comparison_response, comparison_target
@@ -50,6 +51,10 @@ dealer, ownership, warranty coverage, or brochure content. These usually need
 retrieval. Because this chatbot is exclusively about Tata Nexon, short queries
 like "Tell me about the warranty" or "Tell me the coverage" should be treated
 as Tata Nexon questions.
+
+Simple conversational turns such as greetings, acknowledgements, thanks,
+goodbyes, and capability questions should be treated as answerable without
+retrieval. Route these with needs_retrieval=false and intent="direct_answer".
 
 Comparison queries asking to compare Tata Nexon with any other car or model
 are out of scope and must not go to retrieval or answer generation. Examples:
@@ -114,6 +119,13 @@ Return a QueryAnalysis object with:
         "emi",
         "finance",
     )
+    SIMPLE_CONVERSATION_PATTERNS = (
+        r"^(?:hi|hello|hey|good morning|good afternoon|good evening)\b[\s!.]*$",
+        r"^(?:ok|okay|cool|great|got it|understood|sounds good)[\s!.]*$",
+        r"^(?:(?:ok|okay|cool|great|got it|understood|sounds good)[,\s]*)?(?:thanks|thank you|thx)[\s!.]*$",
+        r"^(?:bye|goodbye|see you|see ya)[\s!.]*$",
+        r"^(?:what can you do|who are you|help|what do you do)\??$",
+    )
 
     def __init__(self, llm: Optional[Any] = None) -> None:
         """Create a router.
@@ -139,6 +151,10 @@ Return a QueryAnalysis object with:
         if comparison_analysis is not None:
             logger.info("Router defensively blocked external comparison query.")
             return comparison_analysis
+        direct_analysis = self._direct_answer_analysis(query_text)
+        if direct_analysis is not None:
+            logger.info("Router selected direct answer for simple conversation.")
+            return direct_analysis
 
         if self.llm is not None and query_text:
             try:
@@ -161,9 +177,12 @@ Return a QueryAnalysis object with:
             analysis: Structured query analysis produced by ``analyze``.
 
         Returns:
-            ``retrieval`` for answerable Tata Nexon queries; otherwise
-            ``clarify`` so the graph can end with a helpful message.
+            ``direct_answer`` for conversational turns, ``retrieval`` for
+            answerable Tata Nexon queries, otherwise ``clarify`` so the graph
+            can end with a helpful message.
         """
+        if analysis.intent == "direct_answer":
+            return "direct_answer"
         if not analysis.is_answerable:
             return "clarify"
         return "retrieval"
@@ -213,6 +232,28 @@ Return a QueryAnalysis object with:
                 "The query asks to compare Tata Nexon with another model, "
                 "which is outside this Tata Nexon-only assistant scope."
             ),
+        )
+
+    def _direct_answer_analysis(self, query: str) -> Optional[QueryAnalysis]:
+        """Build analysis for safe conversational turns that need no retrieval.
+
+        Args:
+            query: Normalized user query.
+
+        Returns:
+            QueryAnalysis for direct answers, or ``None`` when normal routing
+            should continue.
+        """
+        if not self._is_simple_conversation(query.lower()):
+            return None
+
+        return QueryAnalysis(
+            intent="direct_answer",
+            is_answerable=True,
+            needs_retrieval=False,
+            confidence=0.95,
+            required_topics=[],
+            reasoning="Simple conversational turn can be answered directly without retrieval.",
         )
 
     def _fallback_analysis(self, query: str) -> QueryAnalysis:
@@ -312,6 +353,21 @@ Return a QueryAnalysis object with:
             Trimmed string suitable for routing checks.
         """
         return (query or "").strip()
+
+    def _is_simple_conversation(self, lower_query: str) -> bool:
+        """Return whether the query is a harmless conversational turn.
+
+        Args:
+            lower_query: Lower-cased user query.
+
+        Returns:
+            True for greetings, acknowledgements, thanks, goodbyes, and
+            capability questions.
+        """
+        return any(
+            re.search(pattern, lower_query.strip(), flags=re.IGNORECASE)
+            for pattern in self.SIMPLE_CONVERSATION_PATTERNS
+        )
 
 
 def router_node(state: AgentState, llm: Optional[Any] = None) -> AgentState:
