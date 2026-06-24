@@ -80,7 +80,24 @@ def test_router_routes_reasonable_ownership_queries_to_retrieval(query):
 
 @pytest.mark.parametrize(
     "query",
-    ["Okay, thanks", "Thanks", "Hi", "Hello", "Bye", "What can you do?"],
+    [
+        "Okay, thanks",
+        "Thanks",
+        "Hi",
+        "Hello",
+        "Bye",
+        "What can you do?",
+        "got it, thanks",
+        "got it. Thanks",
+        "okay thanks",
+        "understood, thank you",
+        "sounds good. thanks",
+        "thanks for your help",
+        "thank you for your help",
+        "thanks a lot",
+        "thank you so much",
+        "got it, thanks for your help",
+    ],
 )
 def test_router_routes_simple_conversation_to_direct_answer(query):
     result = router_node({"query": query})

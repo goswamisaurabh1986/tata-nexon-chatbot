@@ -83,6 +83,32 @@ def test_input_guardrail_allows_reasonable_ownership_and_purchase_queries():
         assert result["route"] == "simple"
 
 
+def test_input_guardrail_allows_combined_acknowledgement_and_thanks():
+    from src.agent.nodes.input_guardrail import InputGuardrail
+
+    node = InputGuardrail(llm=None)
+
+    queries = [
+        "got it, thanks",
+        "got it. Thanks",
+        "okay thanks",
+        "understood, thank you",
+        "sounds good. thanks",
+        "thanks for your help",
+        "thank you for your help",
+        "thanks a lot",
+        "thank you so much",
+        "got it, thanks for your help",
+    ]
+
+    for query in queries:
+        result = node.run({"query": query})
+
+        assert result["input_guardrail"].is_safe is True
+        assert result["input_guardrail"].is_blocked is False
+        assert result["route"] == "simple"
+
+
 def test_input_guardrail_blocks_other_car_comparison_queries_before_router():
     from src.agent.nodes.input_guardrail import InputGuardrail
 

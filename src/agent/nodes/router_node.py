@@ -122,7 +122,7 @@ Return a QueryAnalysis object with:
     SIMPLE_CONVERSATION_PATTERNS = (
         r"^(?:hi|hello|hey|good morning|good afternoon|good evening)\b[\s!.]*$",
         r"^(?:ok|okay|cool|great|got it|understood|sounds good)[\s!.]*$",
-        r"^(?:(?:ok|okay|cool|great|got it|understood|sounds good)[,\s]*)?(?:thanks|thank you|thx)[\s!.]*$",
+        r"^(?:(?:ok|okay|cool|great|got it|understood|sounds good)[,;:.!?\s]*)?(?:thanks|thank you|thx)(?:\s+(?:for (?:your )?help|for helping|a lot|so much|very much))?[\s!.]*$",
         r"^(?:bye|goodbye|see you|see ya)[\s!.]*$",
         r"^(?:what can you do|who are you|help|what do you do)\??$",
     )
