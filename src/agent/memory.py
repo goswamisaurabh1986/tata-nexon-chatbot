@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 CheckpointerBackend = Literal["sqlite", "memory"]
 
-DEFAULT_MEMORY_DB = "chatbot_memory.db"
-DEFAULT_SESSION_REGISTRY = "chatbot_sessions.json"
+DEFAULT_MEMORY_DB = "runtime/chatbot_memory.db"
+DEFAULT_SESSION_REGISTRY = "runtime/chatbot_sessions.json"
 
 
 def get_checkpointer(
@@ -203,6 +203,8 @@ def _load_session_registry() -> dict[str, dict[str, Any]]:
 def _save_session_registry(registry: dict[str, dict[str, Any]]) -> None:
     """Persist the local session registry."""
     path = Path(DEFAULT_SESSION_REGISTRY)
+    if path.parent != Path("."):
+        path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(registry, indent=2, sort_keys=True),
         encoding="utf-8",

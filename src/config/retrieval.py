@@ -36,7 +36,7 @@ class RetrievalSettings(BaseSettings):
         validation_alias="CHROMA_COLLECTION_NAME",
     )
     persist_directory: str = Field(
-        default=".chroma",
+        default="runtime/chroma",
         validation_alias="CHROMA_PERSIST_DIRECTORY",
     )
     embedding_dimension: Optional[int] = Field(

@@ -93,7 +93,7 @@ class MemorySettings(BaseSettings):
         validation_alias=AliasChoices("CHECKPOINTER_BACKEND", "MEMORY_BACKEND"),
     )
     sqlite_path: str = Field(
-        default="chatbot_memory.db",
+        default="runtime/chatbot_memory.db",
         validation_alias=AliasChoices("CHATBOT_MEMORY_DB", "MEMORY_DB_PATH"),
     )
     default_user_id: str = Field(
@@ -101,7 +101,7 @@ class MemorySettings(BaseSettings):
         validation_alias="CHATBOT_USER_ID",
     )
     session_registry_path: str = Field(
-        default="chatbot_sessions.json",
+        default="runtime/chatbot_sessions.json",
         validation_alias="CHATBOT_SESSION_REGISTRY",
     )
 

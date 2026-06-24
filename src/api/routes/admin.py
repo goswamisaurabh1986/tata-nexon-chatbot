@@ -34,7 +34,7 @@ from src.ingestion.processor import IngestionProcessor
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["admin"])
-ADMIN_UPLOAD_DIR = Path("data/admin_uploads")
+ADMIN_UPLOAD_DIR = Path("runtime/admin_uploads")
 SUPPORTED_UPLOAD_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 

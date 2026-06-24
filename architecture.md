@@ -336,7 +336,7 @@ This avoids dummy components in production paths and keeps test overrides simple
 ## Admin Ingestion Lifecycle
 
 1. Admin uploads PDF/TXT/MD through `/admin/ingest`.
-2. API saves the upload to `data/admin_uploads/`.
+2. API saves the upload to `runtime/admin_uploads/`.
 3. SHA-256 hash is calculated for duplicate detection.
 4. Duplicate documents are skipped unless `force_reprocess=true`.
 5. Ingestion processor loads, parses, chunks, embeds, and stores chunks.
@@ -347,11 +347,11 @@ This avoids dummy components in production paths and keeps test overrides simple
 
 | Data | Default Location | Purpose |
 | --- | --- | --- |
-| ChromaDB vectors | `.chroma/` | Persistent vector index |
-| Conversation memory | `chatbot_memory.db` | LangGraph checkpoint memory |
-| Session registry | `chatbot_sessions.json` | CLI/session convenience |
+| ChromaDB vectors | `runtime/chroma/` | Persistent vector index |
+| Conversation memory | `runtime/chatbot_memory.db` | LangGraph checkpoint memory |
+| Session registry | `runtime/chatbot_sessions.json` | CLI/session convenience |
 | Source docs | `data/ingestion_docs/` | Offline ingestion input |
-| Admin uploads | `data/admin_uploads/` | Uploaded documents |
+| Admin uploads | `runtime/admin_uploads/` | Uploaded documents |
 
 ## Testing Strategy
 

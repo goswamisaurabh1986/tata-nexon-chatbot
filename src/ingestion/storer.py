@@ -8,7 +8,7 @@ import chromadb
 
 class VectorStorer:
     DEFAULT_COLLECTION_NAME = "tata_nexon_chunks"
-    DEFAULT_PERSIST_DIRECTORY = ".chroma"
+    DEFAULT_PERSIST_DIRECTORY = "runtime/chroma"
 
     def __init__(
         self,

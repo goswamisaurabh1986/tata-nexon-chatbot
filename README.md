@@ -101,9 +101,10 @@ OPENAI_API_KEY=your_openai_api_key
 OPENAI_CHAT_MODEL=gpt-4o-mini
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 CHROMA_COLLECTION_NAME=tata_nexon_chunks
-CHROMA_PERSIST_DIRECTORY=.chroma
+CHROMA_PERSIST_DIRECTORY=runtime/chroma
 CHECKPOINTER_BACKEND=sqlite
-CHATBOT_MEMORY_DB=chatbot_memory.db
+CHATBOT_MEMORY_DB=runtime/chatbot_memory.db
+CHATBOT_SESSION_REGISTRY=runtime/chatbot_sessions.json
 LOG_LEVEL=INFO
 ```
 
@@ -226,9 +227,9 @@ Recommended files to keep out of Git:
 
 - `.env`
 - `.env.txt`
-- `.chroma/`
-- `chatbot_memory.db`
-- `chatbot_sessions.json`
+- `runtime/`
+- `.chroma/` from older local runs
+- `chatbot_memory.db` and `chatbot_sessions.json` from older local runs
 - uploaded/admin documents if they are private
 - logs and Python/pytest caches
 

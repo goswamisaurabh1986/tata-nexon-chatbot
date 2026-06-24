@@ -15,7 +15,7 @@ def test_settings_provide_domain_defaults(monkeypatch):
     assert settings.llm.embedding_batch_size == 32
     assert settings.retrieval.top_k == 5
     assert settings.ingestion.chunk_size == 1000
-    assert settings.memory.sqlite_path == "chatbot_memory.db"
+    assert settings.memory.sqlite_path == "runtime/chatbot_memory.db"
 
 
 def test_settings_load_environment_overrides(monkeypatch):
